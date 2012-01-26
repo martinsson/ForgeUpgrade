@@ -25,7 +25,7 @@ require 'db/Db.php';
 /**
  * Centralize upgrade of the Forge
  */
-class ForgeUpgrade {
+class ForgeUpgrade implements Runnable {
     /**
      * @var ForgeUpgrade_Db_Driver_Abstract
      */
@@ -234,7 +234,7 @@ class ForgeUpgrade {
     /**
      * Run all available migrations
      */
-    public function run($func) {
+    public function run() {
         // Commands that rely on path
         if (count($this->options['core']['path']) == 0) {
             $this->log()->error('No migration path');
@@ -249,19 +249,21 @@ class ForgeUpgrade {
     }
 
 }
-
-class AlreadyApplied implements Upgrade {
-    public function __construct(ForgeUpgrade_Db $db, $bucket) {
+interface Runnable {
+    function run();
+}
+class AlreadyApplied implements Runnable {
+    public function __construct(ForgeUpgrade_Db $db, $bucketName = null) {
         $this->db = $db;
-        $this->bucket = $bucket;
+        $this->bucketName = $bucketName;
     }
         /**
      * Displays detailed bucket's logs for a given bucket Id 
      * Or all buckets' logs according to the option "bucket" is filled or not
      */
-    public function proceed($buckets) {
-        if ($this->bucket) {
-            $this->displayAlreadyAppliedPerBucket($this->bucket);
+    public function run() {
+        if ($this->bucketName) {
+            $this->displayAlreadyAppliedPerBucket($this->bucketName);
         } else {
             $this->displayAlreadyAppliedForAllBuckets();
         }

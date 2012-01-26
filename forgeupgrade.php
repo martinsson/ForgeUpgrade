@@ -147,7 +147,7 @@ $upgraders = array(
     'already-applied' => new AlreadyApplied(new ForgeUpgrade_Db($dbDriver->getPdo()), $options['core']['bucket']));
 $upg = upgraders($func);
 $upg->setOptions($options);
-$upg->run($func);
+$upg->run();
 
 //
 // Function definitions

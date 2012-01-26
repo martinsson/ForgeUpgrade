@@ -143,7 +143,8 @@ $logger->addAppender($appender);
 // Go
 $upgraders = array(
     'record-only'  => new ForgeUpgrade($dbDriver, new RecordOnly(new ForgeUpgrade_Db($dbDriver->getPdo()))),
-    'check-update' => new ForgeUpgrade($dbDriver, new CheckUpdate())    );
+    'check-update' => new ForgeUpgrade($dbDriver, new CheckUpdate()),
+    'already-applied' => new AlreadyApplied(new ForgeUpgrade_Db($dbDriver->getPdo()), $options['core']['bucket']));
 $upg = upgraders($func);
 $upg->setOptions($options);
 $upg->run($func);

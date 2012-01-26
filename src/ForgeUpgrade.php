@@ -235,14 +235,6 @@ class ForgeUpgrade {
      * Run all available migrations
      */
     public function run($func) {
-        // Commands without path
-        switch ($func) {
-            case 'already-applied':
-                $upgrader = new AlreadyApplied($this->db, $this->options['core']['bucket']);
-                $upgrader->proceed(null);
-                return;
-        }
-        
         // Commands that rely on path
         if (count($this->options['core']['path']) == 0) {
             $this->log()->error('No migration path');

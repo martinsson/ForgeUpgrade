@@ -141,11 +141,10 @@ $appender->activateOptions();
 $logger->addAppender($appender);
 
 // Go
-if ($func == 'record-only') {
-    $upg = new ForgeUpgrade($dbDriver, new RecordOnly(new ForgeUpgrade_Db($dbDriver->getPdo())));
-} else if ($func == 'check-update') {
-    $upg = new ForgeUpgrade($dbDriver, new CheckUpdate());
-}
+$upgraders = array(
+    'record-only'  => new ForgeUpgrade($dbDriver, new RecordOnly(new ForgeUpgrade_Db($dbDriver->getPdo()))),
+    'check-update' => new ForgeUpgrade($dbDriver, new CheckUpdate())    );
+$upg = upgraders($func);
 $upg->setOptions($options);
 $upg->run($func);
 

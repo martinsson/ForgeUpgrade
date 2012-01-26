@@ -27,11 +27,6 @@ require 'db/Db.php';
  */
 class ForgeUpgrade implements Runnable {
     /**
-     * @var ForgeUpgrade_Db_Driver_Abstract
-     */
-    protected $dbDriver;
-
-    /**
      * @var ForgeUpgradeDb
      */
     protected $db;
@@ -55,8 +50,7 @@ class ForgeUpgrade implements Runnable {
     /**
      * Constructor
      */
-    public function __construct(ForgeUpgrade_Db_Driver_Abstract $dbDriver, Upgrade $upgrader) {
-        $this->dbDriver = $dbDriver;
+    public function __construct(ForgeUpgrade_Db $dbDriver, Upgrade $upgrader) {
         $this->db       = new ForgeUpgrade_Db($dbDriver->getPdo());
         $this->bucketApi['ForgeUpgrade_Bucket_Db'] = new ForgeUpgrade_Bucket_Db($dbDriver->getPdo());
         $this->upgrader = $upgrader;
@@ -89,9 +83,6 @@ class ForgeUpgrade implements Runnable {
         }
         if (!isset($options['core']['force'])) {
             $options['core']['force']        = false;
-        }
-        if (!isset($options['core']['bucket'])) {
-            $options['core']['bucket']     = null;
         }
         $this->options = $options;
     }

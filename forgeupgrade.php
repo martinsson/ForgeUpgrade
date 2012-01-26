@@ -141,10 +141,11 @@ $appender->activateOptions();
 $logger->addAppender($appender);
 
 // Go
+$db = new ForgeUpgrade_Db($dbDriver->getPdo());
 $upgraders = array(
-    'record-only'  => new ForgeUpgrade($dbDriver, new RecordOnly(new ForgeUpgrade_Db($dbDriver->getPdo()))),
+    'record-only'  => new ForgeUpgrade($dbDriver, new RecordOnly($db)),
     'check-update' => new ForgeUpgrade($dbDriver, new CheckUpdate()),
-    'already-applied' => new AlreadyApplied(new ForgeUpgrade_Db($dbDriver->getPdo()), $options['core']['bucket']));
+    'already-applied' => new AlreadyApplied($db, $options['core']['bucket']));
 $upg = upgraders($func);
 $upg->setOptions($options);
 $upg->run();

@@ -95,39 +95,6 @@ class ForgeUpgrade {
         $this->options = $options;
     }
 
-    /**
-     * Run all available migrations
-     */
-    public function run($func) {
-        // Commands without path
-        switch ($func) {
-            case 'already-applied':
-                $this->doAlreadyApplied();
-                return;
-        }
-        
-        // Commands that rely on path
-        if (count($this->options['core']['path']) == 0) {
-            $this->log()->error('No migration path');
-            return false;
-        }
-        $buckets = $this->getBucketsToProceed($this->options['core']['path']);
-        if (count($buckets) > 0) {
-            switch ($func) {
-                case 'record-only':
-                    $this->doRecordOnly($buckets);
-                    break;
-
-                case 'check-update':
-                    $this->doCheckUpdate($buckets);
-                    break;
-
-            }
-        } else {
-            $this->log()->info('System up-to-date');
-        }
-    }
-
 
     /**
      * Displays detailed bucket's logs for a given bucket Id
@@ -200,25 +167,6 @@ class ForgeUpgrade {
         } else {
             $this->displayAlreadyAppliedForAllBuckets();
         }
-    }
-
-    private function doRecordOnly($buckets) {
-        foreach ($buckets as $bucket) {
-            $this->log()->info("[doRecordOnly] ".get_class($bucket));
-            $this->db->logStart($bucket);
-            $this->db->logEnd($bucket, ForgeUpgrade_Db::STATUS_SKIP);
-        }
-    }
-
-    private function doCheckUpdate($buckets) {
-        foreach ($buckets as $bucket) {
-            echo $bucket->getPath().PHP_EOL;
-            $lines = explode("\n", $bucket->description());
-            foreach ($lines as $line) {
-                echo "\t$line\n";
-            }
-        }
-        echo count($buckets)." migrations pending\n";
     }
 
 
@@ -355,10 +303,55 @@ class ForgeUpgrade {
     }
 
     /**
-     * Wrapper for Logger
-     *
-     * @return Logger
+     * Run all available migrations
      */
+    public function run($func) {
+        // Commands without path
+        switch ($func) {
+            case 'already-applied':
+                $this->doAlreadyApplied();
+                return;
+        }
+        
+        // Commands that rely on path
+        if (count($this->options['core']['path']) == 0) {
+            $this->log()->error('No migration path');
+            return false;
+        }
+        $buckets = $this->getBucketsToProceed($this->options['core']['path']);
+        if (count($buckets) > 0) {
+            
+            switch ($func) {
+                case 'record-only':
+                    $upgrader = new RecordOnly($this->db);
+                    break;
+
+                case 'check-update':
+                    $upgrader = new CheckUpdate();
+                    break;
+            }
+            $upgrader->proceed($buckets);
+        } else {
+            $this->log()->info('System up-to-date');
+        }
+    }
+
+}
+
+class RecordOnly implements Upgrade {
+    public function __construct(ForgeUpgrade_Db $db) {
+        $this->db       = $db;
+    }
+    
+    public function proceed($buckets) {
+        foreach ($buckets as $bucket) {
+            $this->log()->info("[doRecordOnly] ".get_class($bucket));
+            $this->db->logStart($bucket);
+            $this->db->logEnd($bucket, ForgeUpgrade_Db::STATUS_SKIP);
+        
+        }
+    }
+    
     private function log() {
         if (!$this->log) {
             $this->log = Logger::getLogger(get_class());
@@ -366,9 +359,24 @@ class ForgeUpgrade {
         return $this->log;
     }
     
-    public function setLogger(Logger $log) {
-        $this->log = $log;
+    
+}
+class CheckUpdate implements Upgrade {
+    
+    public function proceed($buckets) {
+        foreach ($buckets as $bucket) {
+            echo $bucket->getPath().PHP_EOL;
+            $lines = explode("\n", $bucket->description());
+            foreach ($lines as $line) {
+                echo "\t$line\n";
+            }
+        }
+        echo count($buckets)." migrations pending\n";
     }
+
+}
+interface Upgrade {
+    function proceed($buckets);
 }
 
 ?>

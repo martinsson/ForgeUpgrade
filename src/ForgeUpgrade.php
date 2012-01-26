@@ -55,10 +55,11 @@ class ForgeUpgrade {
     /**
      * Constructor
      */
-    public function __construct(ForgeUpgrade_Db_Driver_Abstract $dbDriver) {
+    public function __construct(ForgeUpgrade_Db_Driver_Abstract $dbDriver, Upgrade $upgrader) {
         $this->dbDriver = $dbDriver;
         $this->db       = new ForgeUpgrade_Db($dbDriver->getPdo());
         $this->bucketApi['ForgeUpgrade_Bucket_Db'] = new ForgeUpgrade_Bucket_Db($dbDriver->getPdo());
+        $this->upgrader = $upgrader;
     }
 
     /**
@@ -320,17 +321,7 @@ class ForgeUpgrade {
         }
         $buckets = $this->getBucketsToProceed($this->options['core']['path']);
         if (count($buckets) > 0) {
-            
-            switch ($func) {
-                case 'record-only':
-                    $upgrader = new RecordOnly($this->db);
-                    break;
-
-                case 'check-update':
-                    $upgrader = new CheckUpdate();
-                    break;
-            }
-            $upgrader->proceed($buckets);
+            $this->upgrader->proceed($buckets);
         } else {
             $this->log()->info('System up-to-date');
         }

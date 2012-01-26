@@ -38,9 +38,7 @@ for ($i = 1; $i < $argc; $i++) {
     switch ($argv[$i]) {
         case 'help':
         case 'record-only':
-        case 'update':
         case 'check-update':
-        case 'run-pre':
         case 'already-applied':
             $func = $argv[$i];
             break;

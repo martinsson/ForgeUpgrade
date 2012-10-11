@@ -93,6 +93,23 @@ class ForgeUpgrade_Db {
                                   ' WHERE bucket_id='.$bucketId);
     }
 
+    /**
+     * 
+     * @param string $sql
+     * @param string $error_message
+     * 
+     * @return number of rows affected
+     * 
+     * @throws ForgeUpgrade_Bucket_Exception_UpgradeNotComplete
+     */
+    public function exec($sql, $error_message) {
+        $res = $this->dbh->exec($sql);
+        if ($res === false) {
+            throw new ForgeUpgrade_Bucket_Exception_UpgradeNotComplete($error_message. ': '.implode(', ', $this->db->dbh->errorInfo()));
+        }
+        return $res;
+    }
+
 }
 
 ?>
